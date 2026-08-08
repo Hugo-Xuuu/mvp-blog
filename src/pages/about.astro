@@ -4,16 +4,29 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="关于">
   <article class="max-w-3xl mx-auto animate-fade-up">
-    <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight mb-6">关于</h1>
+    <!-- 头像区域 -->
+    <div class="flex flex-col sm:flex-row items-start gap-8 mb-10">
+      <div class="shrink-0">
+        <img
+          src="/avatar.jpg"
+          alt="白日梦的头像"
+          class="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl object-cover shadow-lg border-2 border-[var(--border-color)]"
+          loading="lazy"
+        />
+      </div>
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">关于</h1>
+        <p class="text-[var(--text-secondary)] leading-relaxed">
+          这是 <strong>白日梦的博客</strong> —— 一个专注于前端工程、技术探索与开源实践的个人博客。
+        </p>
+        <p class="text-[var(--text-secondary)] leading-relaxed mt-3">
+          核心原则：<strong>允许粗糙，完成优于完美</strong>。与其等待完美的条件再开始，不如先用 MVP 的方式把想法公开，然后持续迭代。
+        </p>
+      </div>
+    </div>
 
     <div class="prose prose-neutral dark:prose-invert max-w-none
                 prose-a:text-indigo-500 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline">
-      <p>
-        这是 <strong>白日梦的博客</strong> —— 一个专注于前端工程、技术探索与开源实践的个人博客。
-      </p>
-      <p>
-        核心原则：<strong>允许粗糙，完成优于完美</strong>。与其等待完美的条件再开始，不如先用 MVP 的方式把想法公开，然后持续迭代。
-      </p>
       <h2>这个博客记录什么？</h2>
       <ul>
         <li>前端工程化实践与思考</li>
