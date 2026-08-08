@@ -1,0 +1,22 @@
+---
+import TagBadge from './TagBadge.astro';
+
+export interface Props {
+  tags: string[];
+}
+
+const { tags } = Astro.props;
+---
+
+<div
+  class="glow-border sm:col-span-1 lg:col-span-2 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-sm p-6 flex flex-col justify-center transition-all duration-300 hover:-translate-y-1 animate-fade-up"
+  style="animation-delay:.05s"
+>
+  <p class="text-sm font-medium mb-3">文章标签</p>
+  <div class="flex flex-wrap gap-2">
+    {tags.length > 0
+      ? tags.map((tag) => <TagBadge tag={tag} href={`/tags/${encodeURIComponent(tag)}`} />)
+      : <p class="text-xs text-[var(--text-secondary)]">暂无标签</p>
+    }
+  </div>
+</div>

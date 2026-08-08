@@ -1,0 +1,35 @@
+---
+import PostMeta from './PostMeta.astro';
+import type { BlogPost } from '../types/blog';
+
+export interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+const slug = post.id.replace(/\.md$/, '');
+---
+
+<article
+  class="glow-border group sm:col-span-2 lg:col-span-3 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-sm p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 animate-fade-up"
+>
+  <div>
+    <PostMeta date={post.data.date} />
+    <a href={`/blog/${slug}`} class="block mt-1">
+      <h2 class="text-xl sm:text-2xl font-semibold tracking-tight transition-colors group-hover:text-indigo-500">
+        {post.data.title}
+      </h2>
+    </a>
+    {post.data.description && (
+      <p class="mt-2 text-sm text-[var(--text-secondary)] line-clamp-2">
+        {post.data.description}
+      </p>
+    )}
+  </div>
+  <a
+    href={`/blog/${slug}`}
+    class="inline-flex items-center gap-1 text-sm font-medium text-[var(--text-primary)] group-hover:text-indigo-500 transition-colors shrink-0"
+  >
+    阅读全文 <span class="transition-transform group-hover:translate-x-1">→</span>
+  </a>
+</article>

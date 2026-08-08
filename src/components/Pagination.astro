@@ -1,0 +1,94 @@
+---
+export interface Props {
+  currentPage: number;
+  totalPages: number;
+  baseUrl: string;
+}
+
+const { currentPage, totalPages, baseUrl } = Astro.props;
+
+/** 生成显示的页码列表，带省略号 */
+function getPageRange(): (number | 'ellipsis')[] {
+  const pages: (number | 'ellipsis')[] = [];
+  const delta = 1;
+
+  pages.push(1);
+
+  const start = Math.max(2, currentPage - delta);
+  const end = Math.min(totalPages - 1, currentPage + delta);
+
+  if (start > 2) pages.push('ellipsis');
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  if (end < totalPages - 1) pages.push('ellipsis');
+
+  if (totalPages > 1) pages.push(totalPages);
+
+  return pages;
+}
+
+const pageRange = getPageRange();
+
+/** 生成分页 URL */
+function pageUrl(page: number): string {
+  if (page === 1) return baseUrl;
+  return `${baseUrl}/page/${page}`;
+}
+---
+
+{
+  totalPages > 1 && (
+    <nav class="flex items-center justify-center gap-2 mt-12" aria-label="分页导航">
+      <!-- 上一页 -->
+      <a
+        href={currentPage > 1 ? pageUrl(currentPage - 1) : undefined}
+        class:list={{
+          'inline-flex items-center gap-1 rounded-xl border px-4 py-2 text-sm font-medium transition-all hover:bg-indigo-500 hover:text-white': true,
+          'border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)]': true,
+          'opacity-40 pointer-events-none': currentPage <= 1,
+        }}
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        上一页
+      </a>
+
+      <!-- 页码 -->
+      {pageRange.map((page) =>
+        page === 'ellipsis' ? (
+          <span class="px-2 text-[var(--text-tertiary)]">...</span>
+        ) : (
+          <a
+            href={page === currentPage ? undefined : pageUrl(page)}
+            class:list={{
+              'inline-flex items-center justify-center rounded-xl border min-w-[2.5rem] h-10 text-sm font-medium transition-all': true,
+              'bg-indigo-500 text-white border-indigo-500': page === currentPage,
+              'border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:bg-indigo-500 hover:text-white': page !== currentPage,
+            }}
+          >
+            {page}
+          </a>
+        )
+      )}
+
+      <!-- 下一页 -->
+      <a
+        href={currentPage < totalPages ? pageUrl(currentPage + 1) : undefined}
+        class:list={{
+          'inline-flex items-center gap-1 rounded-xl border px-4 py-2 text-sm font-medium transition-all hover:bg-indigo-500 hover:text-white': true,
+          'border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)]': true,
+          'opacity-40 pointer-events-none': currentPage >= totalPages,
+        }}
+      >
+        下一页
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </nav>
+  )
+}

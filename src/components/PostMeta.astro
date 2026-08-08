@@ -1,0 +1,20 @@
+---
+import { formatDate } from '../lib/utils';
+
+export interface Props {
+  date: Date;
+  readingTime?: number;
+}
+
+const { date, readingTime } = Astro.props;
+---
+
+<div class="flex items-center gap-3 text-xs text-[var(--text-tertiary)] font-mono">
+  <time datetime={date.toISOString()}>{formatDate(date)}</time>
+  {readingTime && (
+    <>
+      <span class="text-[var(--text-tertiary)] opacity-50">·</span>
+      <span>{readingTime} 分钟阅读</span>
+    </>
+  )}
+</div>

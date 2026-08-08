@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="页面未找到">
+  <section class="animate-fade-up flex flex-col items-center justify-center text-center py-24">
+    <span class="font-mono text-8xl font-bold text-indigo-500/30 dark:text-indigo-400/20">404</span>
+    <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight mt-6 mb-3">页面未找到</h1>
+    <p class="text-[var(--text-secondary)] max-w-md mb-8">
+      这个页面可能已被移动、删除，或者 URL 有误。博客的 MVP 精神就是——允许粗糙，但持续改进。
+    </p>
+    <div class="flex gap-4">
+      <a href="/" class="rounded-xl bg-indigo-500 text-white px-6 py-3 font-medium hover:bg-indigo-600 transition-colors">
+        ← 返回首页
+      </a>
+      <a href="/blog" class="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-6 py-3 font-medium hover:bg-indigo-500 hover:text-white transition-colors">
+        浏览文章
+      </a>
+    </div>
+  </section>
+</Layout>

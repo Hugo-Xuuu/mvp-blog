@@ -1,0 +1,61 @@
+---
+export interface Props {
+  headings: { depth: number; slug: string; text: string }[];
+}
+
+const { headings } = Astro.props;
+
+/** 只显示 h2 和 h3 级别的标题 */
+const tocHeadings = headings.filter((h) => h.depth <= 3);
+---
+
+{
+  tocHeadings.length > 1 && (
+    <nav class="toc hidden lg:block sticky top-32 w-56 shrink-0">
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-3">
+        目录
+      </h3>
+      <ul class="space-y-1">
+        {tocHeadings.map((h) => (
+          <li>
+            <a
+              href={`#${h.slug}`}
+              class="toc-link"
+              style={`padding-left: ${(h.depth - 2) * 0.75 + 0.75}rem;`}
+              data-heading-slug={h.slug}
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<script>
+  /** 目录滚动监听高亮 */
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const slug = entry.target.id;
+          tocLinks.forEach((link) => {
+            link.classList.toggle(
+              'active',
+              link.getAttribute('data-heading-slug') === slug
+            );
+          });
+        }
+      });
+    },
+    { rootMargin: '-80px 0px -70% 0px' }
+  );
+
+  // 观察所有标题元素
+  const headings = document.querySelectorAll(
+    'article .prose h2, article .prose h3'
+  );
+  headings.forEach((h) => observer.observe(h));
+</script>

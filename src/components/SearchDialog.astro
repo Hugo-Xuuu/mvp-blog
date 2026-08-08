@@ -1,0 +1,183 @@
+<!-- 搜索弹窗 — 直接渲染 -->
+<div id="search-overlay" class="search-overlay">
+  <div id="search-dialog" class="search-dialog">
+    <div class="search-input-wrapper">
+      <svg class="w-5 h-5 text-[var(--text-tertiary)] shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
+      </svg>
+      <input id="search-input" class="search-input" type="text" placeholder="搜索文章标题或内容..." autofocus />
+      <kbd class="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs rounded border border-[var(--border-color)] text-[var(--text-tertiary)]">
+        <span>⌘</span>K
+      </kbd>
+    </div>
+    <div id="search-results" class="search-results">
+      <div class="search-empty"><p>输入关键词开始搜索</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+import Fuse from 'fuse.js';
+
+(function() {
+  const overlay = document.getElementById('search-overlay');
+  const dialog = document.getElementById('search-dialog');
+  const input = document.getElementById('search-input');
+  const resultsContainer = document.getElementById('search-results');
+
+  if (!overlay || !dialog || !input || !resultsContainer) return;
+
+  let fuse = null;
+  let isOpen = false;
+  let searchTerm = '';
+
+  async function initSearch() {
+    if (fuse) return;
+    try {
+      const res = await fetch('/search-index.json');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const searchIndex = await res.json();
+
+      fuse = new Fuse(searchIndex, {
+        keys: [
+          { name: 'title', weight: 2 },
+          { name: 'description', weight: 1 },
+          { name: 'content', weight: 1 },
+        ],
+        threshold: 0.4,
+        includeMatches: true,
+        minMatchCharLength: 1,
+      });
+
+      if (searchTerm) doSearch(searchTerm);
+    } catch (err) {
+      console.error('Search init failed:', err);
+      resultsContainer.innerHTML =
+        '<div class="search-empty"><p>搜索功能加载失败，请刷新重试</p></div>';
+    }
+  }
+
+  function doSearch(term) {
+    searchTerm = term;
+    if (!fuse || !term.trim()) {
+      resultsContainer.innerHTML =
+        '<div class="search-empty"><p>' +
+        (term.trim() ? '' : '输入关键词开始搜索') +
+        '</p></div>';
+      return;
+    }
+
+    const results = fuse.search(term.trim());
+    if (results.length === 0) {
+      resultsContainer.innerHTML =
+        '<div class="search-empty"><p>未找到与 "<strong>' +
+        escapeHtml(term) +
+        '</strong>" 相关的内容</p></div>';
+      return;
+    }
+
+    resultsContainer.innerHTML = results
+      .slice(0, 20)
+      .map((result) => {
+        const item = result.item;
+        const title = highlightMatches(item.title, result.matches);
+        const excerpt = highlightMatches(
+          (item.content || item.description || '').slice(0, 150),
+          result.matches
+        );
+        const tagsHtml = (item.tags || [])
+          .map((t) => `<span class="text-xs text-[var(--text-tertiary)]">#${escapeHtml(t)}</span>`)
+          .join(' ');
+
+        return `<a href="/blog/${item.slug}" class="search-result-item">
+          <div class="search-result-title">${title}</div>
+          <div class="search-result-excerpt">${excerpt}</div>
+          <div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>
+        </a>`;
+      })
+      .join('');
+  }
+
+  function highlightMatches(text, matches) {
+    if (!matches || !text) return escapeHtml(text.slice(0, 200));
+    const matchedIndices = new Set();
+    matches.forEach((m) => {
+      if (m.key === 'title' || m.key === 'content' || m.key === 'description') {
+        m.indices.forEach(([start, end]) => {
+          for (let i = start; i <= end; i++) matchedIndices.add(i);
+        });
+      }
+    });
+    if (matchedIndices.size === 0) return escapeHtml(text.slice(0, 200));
+    let result = '';
+    const maxLen = Math.min(text.length, 200);
+    for (let i = 0; i < maxLen; i++) {
+      if (matchedIndices.has(i)) {
+        result += `<mark>${escapeHtml(text[i])}</mark>`;
+      } else {
+        result += escapeHtml(text[i]);
+      }
+    }
+    return result;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>')
+      .replace(/"/g, '"');
+  }
+
+  function openSearch() {
+    if (isOpen) return;
+    isOpen = true;
+    overlay.classList.add('open');
+    dialog.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    input.value = '';
+    resultsContainer.innerHTML = '<div class="search-empty"><p>输入关键词开始搜索</p></div>';
+    searchTerm = '';
+    setTimeout(() => input.focus(), 150);
+    initSearch();
+  }
+
+  function closeSearch() {
+    if (!isOpen) return;
+    isOpen = false;
+    overlay.classList.remove('open');
+    dialog.classList.remove('open');
+    document.body.style.overflow = '';
+    input.blur();
+  }
+
+  // 事件绑定
+  input.addEventListener('input', (e) => doSearch(e.target.value));
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeSearch();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      isOpen ? closeSearch() : openSearch();
+    }
+    if (e.key === 'Escape' && isOpen) closeSearch();
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSearch();
+    if (e.key === 'Enter') {
+      const firstLink = resultsContainer.querySelector('.search-result-item');
+      if (firstLink) window.location.href = firstLink.getAttribute('href');
+    }
+  });
+
+  // 暴露打开函数供外部调用
+  window.__openSearch = openSearch;
+
+  // 监听自定义事件
+  document.addEventListener('open-search', () => openSearch());
+})();
+</script>

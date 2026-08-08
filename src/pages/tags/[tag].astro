@@ -1,0 +1,44 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PostCard from '../../components/PostCard.astro';
+import TagBadge from '../../components/TagBadge.astro';
+import { getAllTags, getPostsByTag } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const tags = await getAllTags();
+  return tags.map((tag) => ({
+    params: { tag },
+    props: { tag },
+  }));
+}
+
+const { tag } = Astro.props;
+const posts = await getPostsByTag(tag);
+const allTags = await getAllTags();
+---
+
+<Layout title={`#${tag}`} description={`标签「${tag}」下的全部文章`}>
+  <section class="animate-fade-up">
+    <!-- 标签导航 -->
+    <div class="flex flex-wrap gap-2 mb-8">
+      {allTags.map((t) => (
+        <TagBadge tag={t} href={`/tags/${encodeURIComponent(t)}`} active={t === tag} />
+      ))}
+    </div>
+
+    <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--text-primary)] mb-2">
+      # {tag}
+    </h1>
+    <p class="text-[var(--text-secondary)] mb-8">
+      共 {posts.length} 篇相关文章
+    </p>
+
+    <div class="grid grid-cols-1 gap-4">
+      {posts.map((post) => <PostCard post={post} />)}
+    </div>
+
+    {posts.length === 0 && (
+      <p class="text-center text-[var(--text-tertiary)] py-12">该标签下暂无文章</p>
+    )}
+  </section>
+</Layout>

@@ -1,0 +1,41 @@
+---
+/**
+ * 回到顶部按钮 — 使用内联 script（无 Island 额外 JS）
+ * 默认完全透明不可见，JS 控制滚动阈值显示
+ */
+---
+
+<button
+  id="back-to-top"
+  aria-label="回到顶部"
+  class="fixed bottom-6 right-6 z-50 grid h-10 w-10 place-items-center rounded-xl border border-[var(--border-color)] bg-white/80 dark:bg-white/10 backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+  style="opacity:0; transform: translateY(1rem); pointer-events: none;"
+>
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+  </svg>
+</button>
+
+<script>
+  const btn = document.getElementById('back-to-top');
+  if (btn) {
+    let isVisible = false;
+
+    const toggleVisibility = () => {
+      const shouldShow = window.scrollY > 300;
+      if (shouldShow !== isVisible) {
+        isVisible = shouldShow;
+        btn.style.opacity = isVisible ? '1' : '0';
+        btn.style.transform = isVisible ? 'translateY(0)' : 'translateY(1rem)';
+        btn.style.pointerEvents = isVisible ? 'auto' : 'none';
+      }
+    };
+
+    window.addEventListener('scroll', toggleVisibility, { passive: true });
+    toggleVisibility();
+
+    btn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+</script>

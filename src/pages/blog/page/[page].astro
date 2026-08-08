@@ -1,0 +1,34 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import PostCard from '../../../components/PostCard.astro';
+import Pagination from '../../../components/Pagination.astro';
+import { getPaginatedPosts } from '../../../lib/content';
+
+export async function getStaticPaths() {
+  const { totalPages } = await getPaginatedPosts(1, 10);
+  const paths = [];
+  for (let i = 2; i <= totalPages; i++) {
+    paths.push({ params: { page: String(i) }, props: { page: i } });
+  }
+  return paths;
+}
+
+const { page = 2 } = Astro.props;
+const { posts, totalPages } = await getPaginatedPosts(page, 10);
+const baseUrl = '/blog';
+---
+
+<Layout title={`文章列表 — 第 ${page} 页`}>
+  <section class="animate-fade-up">
+    <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--text-primary)] mb-2">全部文章</h1>
+    <p class="text-[var(--text-secondary)] mb-8">
+      共 {posts.length} 篇内容 · 第 {page}/{totalPages} 页
+    </p>
+
+    <div class="grid grid-cols-1 gap-4">
+      {posts.map((post) => <PostCard post={post} />)}
+    </div>
+
+    <Pagination currentPage={page} totalPages={totalPages} baseUrl={baseUrl} />
+  </section>
+</Layout>

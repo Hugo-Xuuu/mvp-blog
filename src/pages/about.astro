@@ -1,0 +1,33 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="关于">
+  <article class="max-w-3xl mx-auto animate-fade-up">
+    <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight mb-6">关于</h1>
+
+    <div class="prose prose-neutral dark:prose-invert max-w-none
+                prose-a:text-indigo-500 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline">
+      <p>
+        这是 <strong>白日梦的博客</strong> —— 一个专注于前端工程、技术探索与开源实践的个人博客。
+      </p>
+      <p>
+        核心原则：<strong>允许粗糙，完成优于完美</strong>。与其等待完美的条件再开始，不如先用 MVP 的方式把想法公开，然后持续迭代。
+      </p>
+      <h2>这个博客记录什么？</h2>
+      <ul>
+        <li>前端工程化实践与思考</li>
+        <li>系统设计与架构决策</li>
+        <li>AI 原生应用开发探索</li>
+        <li>个人学习笔记与总结</li>
+      </ul>
+      <h2>技术栈</h2>
+      <ul>
+        <li>框架：<a href="https://astro.build" target="_blank" rel="noopener">Astro v7</a></li>
+        <li>样式：<a href="https://tailwindcss.com" target="_blank" rel="noopener">Tailwind CSS v4</a></li>
+        <li>内容：Markdown + Content Collections</li>
+        <li>部署：纯静态生成 (SSG)</li>
+      </ul>
+    </div>
+  </article>
+</Layout>

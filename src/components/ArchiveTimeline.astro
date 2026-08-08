@@ -1,0 +1,60 @@
+---
+import { formatDate } from '../lib/utils';
+import type { BlogPost } from '../types/blog';
+
+export interface Props {
+  posts: BlogPost[];
+}
+
+const { posts } = Astro.props;
+
+/** 按年份分组 */
+function groupByYear(posts: BlogPost[]): Map<number, BlogPost[]> {
+  const groups = new Map<number, BlogPost[]>();
+  for (const post of posts) {
+    const year = post.data.date.getFullYear();
+    if (!groups.has(year)) groups.set(year, []);
+    groups.get(year)!.push(post);
+  }
+  return new Map([...groups.entries()].sort((a, b) => b[0] - a[0]));
+}
+
+const yearGroups = groupByYear(posts);
+---
+
+<div class="space-y-12">
+  {[...yearGroups.entries()].map(([year, yearPosts]) => (
+    <div>
+      <h2 class="text-2xl font-semibold tracking-tight mb-6 flex items-center gap-3">
+        <span class="font-mono text-indigo-500 dark:text-indigo-400">{year}</span>
+        <span class="text-sm text-[var(--text-tertiary)] font-normal">({yearPosts.length} 篇)</span>
+      </h2>
+
+      <div class="space-y-4 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-neutral-200 dark:before:bg-neutral-800">
+        {yearPosts.map((post) => {
+          const slug = post.id.replace(/\.md$/, '');
+          return (
+            <a
+              href={`/blog/${slug}`}
+              class="group flex items-center gap-4 pl-8 relative"
+            >
+              <!-- 时间线圆点 -->
+              <span class="absolute left-[3px] top-1.5 w-[18px] h-[18px] rounded-full border-2 border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-[#141517] group-hover:border-indigo-500 transition-colors" />
+
+              <!-- 日期 -->
+              <span class="font-mono text-xs text-[var(--text-tertiary)] shrink-0 w-16 pt-0.5">
+                {String(post.data.date.getMonth() + 1).padStart(2, '0')}-
+                {String(post.data.date.getDate()).padStart(2, '0')}
+              </span>
+
+              <!-- 标题 -->
+              <span class="font-medium text-[var(--text-primary)] group-hover:text-indigo-500 transition-colors">
+                {post.data.title}
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  ))}
+</div>

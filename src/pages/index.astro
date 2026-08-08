@@ -1,0 +1,25 @@
+---
+import Layout from '../layouts/Layout.astro';
+import HeroSection from '../components/HeroSection.astro';
+import StatsCard from '../components/StatsCard.astro';
+import TagCloud from '../components/TagCloud.astro';
+import PostCard from '../components/PostCard.astro';
+import { getAllPosts, getAllTags, getPostCount } from '../lib/content';
+
+const posts = await getAllPosts();
+const tags = await getAllTags();
+const postCount = await getPostCount();
+---
+
+<Layout>
+  <HeroSection />
+
+  <!-- Bento Grid 区域 -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(0,1fr)] gap-4 mt-10">
+    <StatsCard count={postCount} />
+    <TagCloud tags={tags} />
+
+    <!-- 动态渲染文章列表 -->
+    {posts.map((post) => <PostCard post={post} />)}
+  </section>
+</Layout>

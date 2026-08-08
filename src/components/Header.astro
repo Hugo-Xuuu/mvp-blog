@@ -1,0 +1,42 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+---
+
+<header class="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 pt-4">
+  <nav class="mx-auto max-w-5xl flex items-center justify-between rounded-2xl border border-white/40 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-xl px-5 py-3 shadow-lg shadow-black/5">
+    <a href="/" class="flex items-center gap-2 font-semibold tracking-tight">
+      <span class="grid h-8 w-8 place-items-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-sm font-mono">梦</span>
+      <span class="text-[var(--text-primary)]">白日梦的博客</span>
+    </a>
+    <div class="flex items-center gap-3">
+      <button id="search-toggle" aria-label="搜索" title="搜索 (⌘K)" class="grid h-9 w-9 place-items-center rounded-lg border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 transition-transform hover:scale-105 active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
+        </svg>
+      </button>
+      <a href="/blog" class="text-sm font-medium text-[var(--text-tertiary)] dark:text-neutral-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors hidden sm:block">文章</a>
+      <a href="/archive" class="text-sm font-medium text-[var(--text-tertiary)] dark:text-neutral-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors hidden sm:block">归档</a>
+      <a href="/tags" class="text-sm font-medium text-[var(--text-tertiary)] dark:text-neutral-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors hidden sm:block">标签</a>
+      <a href="/about" class="text-sm font-medium text-[var(--text-tertiary)] dark:text-neutral-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors hidden sm:block">关于</a>
+      <ThemeToggle />
+    </div>
+  </nav>
+</header>
+
+<script>
+  // 搜索按钮点击 — 使用自定义事件触发 SearchDialog，不依赖 window.__openSearch 时序
+  const searchBtn = document.getElementById('search-toggle');
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => {
+      // 先尝试自定义事件，后备使用全局函数
+      if (typeof document !== 'undefined') {
+        document.dispatchEvent(new CustomEvent('open-search'));
+      }
+    });
+  }
+
+  // 同时也尝试全局函数（如果 SearchDialog 已加载）
+  if (searchBtn && window.__openSearch) {
+    // 如果已经加载完成，直接使用
+  }
+</script>

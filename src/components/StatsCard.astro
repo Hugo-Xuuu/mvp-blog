@@ -1,0 +1,17 @@
+---
+export interface Props {
+  count: number;
+}
+const { count } = Astro.props;
+---
+
+<div
+  class="glow-border rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-sm p-6 flex flex-col justify-center transition-all duration-300 hover:-translate-y-1 animate-fade-up"
+>
+  <p class="font-mono text-5xl font-bold tracking-tight text-indigo-500">
+    {count}
+  </p>
+  <p class="mt-2 text-sm text-[var(--text-secondary)] font-medium">
+    篇已发布文章
+  </p>
+</div>

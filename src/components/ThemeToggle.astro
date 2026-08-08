@@ -1,0 +1,73 @@
+---
+/**
+ * 深色/浅色模式切换按钮
+ * 使用 client:load 作为 Astro Island 独立交互
+ * 初始化脚本在 Layout.astro head 中同步执行
+ */
+---
+
+<button
+  id="theme-toggle"
+  aria-label="切换主题"
+  class="grid h-9 w-9 place-items-center rounded-lg border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 transition-transform hover:scale-105 active:scale-95"
+>
+  <!-- 深色模式显示的太阳图标 -->
+  <svg
+    class="h-4 w-4 hidden dark:block"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      d="M12 3v2m0 14v2m9-9h-2M5 12H3m14.95 6.95-1.41-1.41M6.46 6.46 5.05 5.05m12.49 0-1.41 1.41M6.46 17.54l-1.41 1.41M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
+    />
+  </svg>
+  <!-- 浅色模式显示的月亮图标 -->
+  <svg
+    class="h-4 w-4 block dark:hidden"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"
+    />
+  </svg>
+</button>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  const root = document.documentElement;
+
+  if (toggle) {
+    const updateTheme = () => {
+      const isDark = root.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    };
+
+    toggle.addEventListener('click', () => {
+      root.classList.toggle('dark');
+      updateTheme();
+    });
+
+    // 监听系统主题变化 — 仅当用户未手动设置偏好时跟随系统
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const stored = localStorage.getItem('theme');
+    if (!stored) {
+      mediaQuery.addEventListener('change', (e) => {
+        if (e.matches) {
+          root.classList.add('dark');
+        } else {
+          root.classList.remove('dark');
+        }
+        // 注意：不存储到 localStorage，保持跟随系统
+      });
+    }
+  }
+</script>
