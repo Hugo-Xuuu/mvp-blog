@@ -53,9 +53,9 @@ export function buildTitle(pageTitle?: string): string {
 export const SITE_CONFIG = {
   name: "白日梦的博客",
   shortName: "白日梦",
-  description: "记录白日梦般的前端构思、技术探索与开源实践。",
+  description: "一个专注于前端工程、技术探索与开源实践的个人博客。",
   url: "https://your-domain.com",
   language: "zh-CN",
-  author: "Nova",
-  copyright: `© ${new Date().getFullYear()} 白日梦的博客. All rights reserved.`,
+  author: "Hugo-Xuuu",
+  copyright: `© ${new Date().getFullYear()} 白日梦的博客.`,
 } as const;

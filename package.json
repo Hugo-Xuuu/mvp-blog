@@ -2,6 +2,7 @@
   "name": "my-blog",
   "type": "module",
   "version": "0.0.1",
+  "description": "Astro v7 + Tailwind CSS v4 开源博客模板。全站搜索、双主题、Shiki 代码高亮、RSS 订阅，五分钟搭建你的技术博客。",
   "engines": {
     "node": ">=22.12.0"
   },

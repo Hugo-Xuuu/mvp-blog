@@ -4,42 +4,114 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="关于">
   <article class="max-w-3xl mx-auto animate-fade-up">
-    <!-- 头像区域 -->
-    <div class="flex flex-col sm:flex-row items-start gap-8 mb-10">
+    <!-- 头像与简介区域 -->
+    <div class="flex flex-col sm:flex-row items-start gap-8 mb-12">
       <div class="shrink-0">
         <img
           src="/avatar.jpg"
-          alt="白日梦的头像"
+          alt="Hugo-Xuuu 的头像"
           class="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl object-cover shadow-lg border-2 border-[var(--border-color)]"
           loading="lazy"
         />
       </div>
       <div>
-        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">关于</h1>
-        <p class="text-[var(--text-secondary)] leading-relaxed">
-          这是 <strong>白日梦的博客</strong> —— 一个专注于前端工程、技术探索与开源实践的个人博客。
+        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+          你好，我是 <span class="text-indigo-500 dark:text-indigo-400">Hugo</span>
+        </h1>
+        <p class="text-lg text-[var(--text-secondary)] leading-relaxed">
+          一名热爱前端工程、系统设计与开源的全栈开发者。
         </p>
         <p class="text-[var(--text-secondary)] leading-relaxed mt-3">
-          核心原则：<strong>允许粗糙，完成优于完美</strong>。与其等待完美的条件再开始，不如先用 MVP 的方式把想法公开，然后持续迭代。
+          这个博客是我的 <strong>Build in Public</strong> 实验场 — 在这里，我公开构建、公开学习、公开犯错。
+          我相信 <strong class="text-indigo-500 dark:text-indigo-400">完成优于完美</strong>，与其等待条件成熟，
+          不如先把想法发布出去，然后持续迭代。
         </p>
       </div>
     </div>
 
+    <!-- 核心内容 -->
     <div class="prose prose-neutral dark:prose-invert max-w-none
                 prose-a:text-indigo-500 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline">
-      <h2>这个博客记录什么？</h2>
+
+      <h2>🎯 我在做什么</h2>
+      <p>
+        这个博客是我的数字花园，记录了我在前端工程化、架构设计和 AI 应用开发中的思考、实验与复盘。
+        每一篇文章都是一次公开的学习笔记，不追求面面俱到，但求真实可感。
+      </p>
       <ul>
-        <li>前端工程化实践与思考</li>
-        <li>系统设计与架构决策</li>
-        <li>AI 原生应用开发探索</li>
-        <li>个人学习笔记与总结</li>
+        <li><strong>前端工程化</strong> — 构建工具、CI/CD、Monorepo、微前端</li>
+        <li><strong>架构与设计</strong> — 系统设计、设计模式、技术选型决策</li>
+        <li><strong>AI 原生应用</strong> — LLM 集成、AI 工作流、智能体开发</li>
+        <li><strong>开源实践</strong> — 开源贡献、社区运营、开发者体验</li>
       </ul>
-      <h2>技术栈</h2>
+
+      <h2>⚡ 技术栈</h2>
+      <p>这个博客本身就是一个技术 demo，它使用：</p>
       <ul>
-        <li>框架：<a href="https://astro.build" target="_blank" rel="noopener">Astro v7</a></li>
-        <li>样式：<a href="https://tailwindcss.com" target="_blank" rel="noopener">Tailwind CSS v4</a></li>
-        <li>内容：Markdown + Content Collections</li>
-        <li>部署：纯静态生成 (SSG)</li>
+        <li><a href="https://astro.build" target="_blank" rel="noopener">Astro v7</a> — 高性能静态站点生成器，Islands 架构</li>
+        <li><a href="https://tailwindcss.com" target="_blank" rel="noopener">Tailwind CSS v4</a> — 原子化 CSS 框架，Utility-first 工作流</li>
+        <li><a href="https://www.typescriptlang.org/" target="_blank" rel="noopener">TypeScript</a> — 类型安全的开发体验</li>
+        <li><a href="https://fusejs.io" target="_blank" rel="noopener">Fuse.js</a> — 客户端全文模糊搜索</li>
+        <li><a href="https://shiki.style" target="_blank" rel="noopener">Shiki</a> — 双主题代码高亮（亮色/暗色）</li>
+        <li><strong>Markdown + Content Collections</strong> — 类型安全的内容管理</li>
+        <li><strong>SSG 纯静态输出</strong> — 极速加载，可部署到任何平台</li>
+      </ul>
+
+      <h2>🎨 设计理念</h2>
+      <p>这个博客的每一个像素都经过精心考虑：</p>
+      <ul>
+        <li><strong>开发者体验优先</strong> — 代码高亮、阅读时间估算、键盘快捷键搜索（<kbd>⌘K</kbd>）</li>
+        <li><strong>内容为王</strong> — 简洁排版，最小化干扰，让读者专注于文字</li>
+        <li><strong>暗色/亮色双主题</strong> — 跟随系统偏好，或随心切换，彻底消除 FOUC 闪烁</li>
+        <li><strong>性能至上</strong> — 零运行时 JS（页面），纯静态 HTML，瞬间加载</li>
+        <li><strong>SEO 满分</strong> — Open Graph、Twitter Card、RSS、Sitemap 全覆盖</li>
+      </ul>
+
+      <h2>🤝 为什么开源？</h2>
+      <p>
+        我相信开源是最好的学习方式。这个博客的每一行代码都是公开的，你可以：
+      </p>
+      <ul>
+        <li>把它当作 Astro + Tailwind CSS v4 的 <strong>最佳实践参考</strong></li>
+        <li>Fork 它，几分钟内搭建你自己的博客</li>
+        <li>提交 Issue 或 PR，帮助它变得更好</li>
+        <li>在社交媒体上分享，让更多人看到</li>
+      </ul>
+
+      <div class="not-prose mt-10 p-6 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)]">
+        <p class="text-[var(--text-primary)] font-medium text-lg mb-2">
+          🌟 如果这个项目对你有帮助
+        </p>
+        <p class="text-[var(--text-secondary)] mb-4">
+          欢迎在 GitHub 上 Star ⭐，你的支持是我持续开源的动力。
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a
+            href="https://github.com/Hugo-Xuuu/mvp-blog"
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-medium transition-all hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            Star on GitHub
+          </a>
+          <a
+            href="https://github.com/Hugo-Xuuu/mvp-blog/issues"
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--tag-bg)] font-medium transition-all hover:-translate-y-0.5"
+          >
+            💬 反馈建议
+          </a>
+        </div>
+      </div>
+
+      <h2 class="mt-10">📬 联系我</h2>
+      <ul>
+        <li>GitHub：<a href="https://github.com/Hugo-Xuuu" target="_blank" rel="noopener">@Hugo-Xuuu</a></li>
+        <li>博客：<a href="https://mvp-blog-pearl.vercel.app" target="_blank" rel="noopener">mvp-blog-pearl.vercel.app</a></li>
+        <li>项目 Issues：<a href="https://github.com/Hugo-Xuuu/mvp-blog/issues" target="_blank" rel="noopener">提交 Issue</a></li>
+        <li>邮件：temp.gravity988@passinbox.com</li>
       </ul>
     </div>
   </article>
