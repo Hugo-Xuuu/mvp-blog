@@ -16,18 +16,16 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 
-// Astro v7 Loader API: render() 返回 { Content, headings, remarkPluginFrontmatter }
 const { Content, headings } = await render(post);
-// 阅读时间基于原始 Markdown 正文长度计算
 const readingTime = estimateReadingTime(post.body || '');
 
-// 获取前后篇文章用于导航
 const allPosts = await getAllPosts();
 const currentIndex = allPosts.findIndex((p) => p.id === post.id);
 const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
 const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
 
 const slug = post.id.replace(/\.md$/, '');
+const hasTOC = headings && headings.filter((h) => h.depth <= 3).length > 1;
 ---
 
 <Layout
@@ -43,7 +41,6 @@ const slug = post.id.replace(/\.md$/, '');
   <div class="flex gap-8 relative">
     <!-- 文章主体 -->
     <article class="flex-1 min-w-0 max-w-3xl animate-fade-up">
-      <!-- 文章头部 -->
       <header class="mb-10">
         <div class="flex flex-wrap gap-2 mb-4">
           {post.data.tags.map((tag) => (
@@ -56,7 +53,6 @@ const slug = post.id.replace(/\.md$/, '');
         <PostMeta date={post.data.date} readingTime={readingTime} />
       </header>
 
-      <!-- 文章内容 (Tailwind Typography) -->
       <div class="prose prose-neutral dark:prose-invert max-w-none
                   prose-headings:font-semibold prose-headings:tracking-tight
                   prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
@@ -64,7 +60,6 @@ const slug = post.id.replace(/\.md$/, '');
         <Content />
       </div>
 
-      <!-- 标签 -->
       {post.data.tags.length > 0 && (
         <div class="flex flex-wrap gap-2 mt-8 pt-8 border-t border-[var(--border-color)]">
           {post.data.tags.map((tag) => (
@@ -73,146 +68,159 @@ const slug = post.id.replace(/\.md$/, '');
         </div>
       )}
 
-      <!-- 上下篇导航 -->
       <nav class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
         {prevPost ? (
-          <a
-            href={`/blog/${prevPost.id.replace(/\.md$/, '')}`}
-            class="group rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg"
-          >
+          <a href={`/blog/${prevPost.id.replace(/\.md$/, '')}`}
+             class="group rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg">
             <span class="text-xs text-[var(--text-tertiary)] font-mono">← 上一篇</span>
-            <p class="mt-1 font-medium text-[var(--text-primary)] group-hover:text-indigo-500 transition-colors">
-              {prevPost.data.title}
-            </p>
+            <p class="mt-1 font-medium text-[var(--text-primary)] group-hover:text-indigo-500 transition-colors">{prevPost.data.title}</p>
           </a>
         ) : <div />}
         {nextPost ? (
-          <a
-            href={`/blog/${nextPost.id.replace(/\.md$/, '')}`}
-            class="group rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 text-right transition-all hover:-translate-y-0.5 hover:shadow-lg sm:col-start-2"
-          >
+          <a href={`/blog/${nextPost.id.replace(/\.md$/, '')}`}
+             class="group rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 text-right transition-all hover:-translate-y-0.5 hover:shadow-lg sm:col-start-2">
             <span class="text-xs text-[var(--text-tertiary)] font-mono">下一篇 →</span>
-            <p class="mt-1 font-medium text-[var(--text-primary)] group-hover:text-indigo-500 transition-colors">
-              {nextPost.data.title}
-            </p>
+            <p class="mt-1 font-medium text-[var(--text-primary)] group-hover:text-indigo-500 transition-colors">{nextPost.data.title}</p>
           </a>
         ) : <div />}
       </nav>
     </article>
 
-    <!-- 右侧 TOC 目录 -->
+    <!-- 桌面端 TOC -->
     <div class="hidden lg:block w-56 shrink-0">
       <div class="sticky top-32">
-        {
-          headings && headings.filter((h) => h.depth <= 3).length > 1 && (
-            <nav class="toc">
-              <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-3">目录</h3>
-              <ul class="space-y-1">
-                {headings
-                  .filter((h) => h.depth <= 3)
-                  .map((h) => (
-                    <li>
-                      <a
-                        href={`#${h.slug}`}
-                        class="toc-link"
-                        style={`padding-left: ${(h.depth - 2) * 0.75 + 0.75}rem;`}
-                        data-heading-slug={h.slug}
-                      >
-                        {h.text}
-                      </a>
-                    </li>
-                  ))}
-              </ul>
-            </nav>
-          )
-        }
+        {hasTOC && (
+          <nav class="toc">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-3">目录</h3>
+            <ul class="space-y-1">
+              {headings.filter((h) => h.depth <= 3).map((h) => (
+                <li>
+                  <a href={`#${h.slug}`} class="toc-link"
+                     style={`padding-left: ${(h.depth - 2) * 0.75 + 0.75}rem;`}
+                     data-heading-slug={h.slug}>{h.text}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+      </div>
+    </div>
+
+    <!-- 移动端 TOC 按钮 -->
+    <button id="mobile-toc-btn" class="mobile-toc-btn" aria-label="目录">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+      目录
+    </button>
+
+    <!-- 移动端 TOC 抽屉 -->
+    <div id="mobile-toc-drawer" class="fixed inset-x-0 bottom-0 z-50 bg-[var(--bg-primary)] border-t border-[var(--border-color)] rounded-t-2xl shadow-2xl translate-y-full transition-transform duration-300 ease-out lg:hidden"
+         style="max-height: 60vh; overflow-y: auto;">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-[var(--border-color)]">
+        <span class="font-semibold text-sm">目录</span>
+        <button id="mobile-toc-close" class="p-1 rounded-lg hover:bg-[var(--tag-bg)] transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="px-4 py-3" id="mobile-toc-list">
+        {hasTOC && (
+          <nav><ul class="space-y-1">
+            {headings.filter((h) => h.depth <= 3).map((h) => (
+              <li>
+                <a href={`#${h.slug}`}
+                   class="toc-link mobile-toc-link"
+                   style={`padding-left: ${(h.depth - 2) * 0.75 + 0.75}rem;`}>{h.text}</a>
+              </li>
+            ))}
+          </ul></nav>
+        )}
       </div>
     </div>
   </div>
 </Layout>
 
 <script>
-/** ── 阅读进度条 ── */
-(() => {
-  const bar = document.getElementById('reading-progress');
-  if (!bar) return;
-  const updateProgress = () => {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.width = `${docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0}%`;
-  };
-  window.addEventListener('scroll', updateProgress, { passive: true });
-  updateProgress();
-})();
+  // ── 阅读进度条 ──
+  (() => {
+    const bar = document.getElementById('reading-progress');
+    if (!bar) return;
+    const update = () => {
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.width = `${docH > 0 ? Math.min((window.scrollY / docH) * 100, 100) : 0}%`;
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
 
-/** ── TOC 滚动监听高亮 + 平滑滚动 ── */
-(() => {
-  const tocLinks = document.querySelectorAll('.toc-link');
-  if (tocLinks.length === 0) return;
-
-  // 1. 点击平滑滚动
-  tocLinks.forEach((link) => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const targetId = link.getAttribute('href')?.slice(1);
-      if (!targetId) return;
-      const target = document.getElementById(targetId);
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // 更新 URL hash（不触发滚动）
-        history.pushState(null, '', `#${targetId}`);
-      }
-    });
-  });
-
-  // 2. IntersectionObserver 高亮当前章节
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          tocLinks.forEach((link) => {
-            const isActive = link.getAttribute('data-heading-slug') === entry.target.id;
-            link.classList.toggle('active', isActive);
-          });
-        }
+  // ── TOC 滚动高亮 ──
+  (() => {
+    const links = document.querySelectorAll('.toc-link');
+    if (!links.length) return;
+    links.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = link.getAttribute('href')?.slice(1);
+        if (!id) return;
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.pushState(null, '', `#${id}`);
       });
-    },
-    { rootMargin: '-80px 0px -70% 0px' }
-  );
-
-  document.querySelectorAll('article h2, article h3').forEach((h) => observer.observe(h));
-})();
-
-/** ── 代码复制按钮 ── */
-(() => {
-  const codeBlocks = document.querySelectorAll('.prose pre');
-  // 标记单行代码块 — 按钮始终显示
-  codeBlocks.forEach((pre) => {
-    const codeEl = pre.querySelector('code');
-    if (!codeEl) return;
-    const lineCount = (codeEl.textContent || '').split('\n').length;
-
-    const btn = document.createElement('button');
-    btn.className = 'copy-button';
-    if (lineCount <= 2) btn.classList.add('always-visible');
-    btn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> 复制`;
-    pre.style.position = 'relative';
-    pre.appendChild(btn);
-
-    btn.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(codeEl.textContent || '');
-        btn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> 已复制`;
-        btn.classList.add('copied');
-        setTimeout(() => {
-          btn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> 复制`;
-          btn.classList.remove('copied');
-        }, 2000);
-      } catch {
-        btn.textContent = '失败';
-        setTimeout(() => { btn.innerHTML = '复制'; }, 1500);
-      }
     });
-  });
-})();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            links.forEach((l) => l.classList.toggle('active', l.getAttribute('data-heading-slug') === entry.target.id));
+          }
+        });
+      },
+      { rootMargin: '-80px 0px -70% 0px' }
+    );
+    document.querySelectorAll('article h2, article h3').forEach((h) => observer.observe(h));
+  })();
+
+  // ── 代码复制按钮 ──
+  (() => {
+    document.querySelectorAll('.prose pre').forEach((pre) => {
+      if (pre.querySelector('.copy-button')) return;
+      const code = pre.querySelector('code');
+      if (!code) return;
+      const singleLine = (code.textContent || '').split('\n').length <= 2;
+      const btn = document.createElement('button');
+      btn.className = 'copy-button' + (singleLine ? ' always-visible' : '');
+      btn.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> 复制';
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(code.textContent || '');
+          btn.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> 已复制';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> 复制';
+            btn.classList.remove('copied');
+          }, 2000);
+        } catch { btn.textContent = '失败'; setTimeout(() => { btn.innerHTML = '复制'; }, 1500); }
+      });
+    });
+  })();
+
+  // ── 移动端 TOC ──
+  (() => {
+    const btn = document.getElementById('mobile-toc-btn');
+    const drawer = document.getElementById('mobile-toc-drawer');
+    const closeBtn = document.getElementById('mobile-toc-close');
+    const list = document.getElementById('mobile-toc-list');
+    if (!btn || !drawer) return;
+    const open = () => { drawer.style.transform = 'translateY(0)'; btn.style.display = 'none'; };
+    const close = () => { drawer.style.transform = 'translateY(100%)'; btn.style.display = 'flex'; };
+    btn.addEventListener('click', open);
+    closeBtn?.addEventListener('click', close);
+    // 点击 TOC 链接后关闭抽屉
+    list?.addEventListener('click', (e) => {
+      if (e.target.closest('.mobile-toc-link')) setTimeout(close, 300);
+    });
+  })();
 </script>

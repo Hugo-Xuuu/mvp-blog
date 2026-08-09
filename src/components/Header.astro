@@ -3,40 +3,90 @@ import ThemeToggle from './ThemeToggle.astro';
 ---
 
 <header class="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 pt-4">
-  <nav class="mx-auto max-w-5xl flex items-center justify-between rounded-2xl border border-white/40 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-xl px-5 py-3 shadow-lg shadow-black/5">
+  <nav class="mx-auto max-w-5xl flex items-center justify-between rounded-2xl border border-[var(--header-border)] bg-[var(--header-bg)] backdrop-blur-xl px-5 py-3 shadow-lg shadow-black/5">
     <a href="/" class="flex items-center gap-3 font-semibold tracking-tight">
       <img src="/avatar.jpg" alt="头像" class="w-8 h-8 rounded-lg object-cover" />
-      <span class="text-[var(--text-primary)]">白日梦的博客</span>
+      <span class="text-[var(--text-primary)] hidden sm:inline">白日梦的博客</span>
     </a>
-    <div class="flex items-center gap-3">
-      <button id="search-toggle" aria-label="搜索" title="搜索 (⌘K)" class="grid h-9 w-9 place-items-center rounded-lg border border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5 transition-transform hover:scale-105 active:scale-95">
+
+    <!-- 桌面端导航 -->
+    <div class="hidden sm:flex items-center gap-3">
+      <button id="search-toggle" aria-label="搜索" title="搜索 (⌘K)" class="grid h-9 w-9 place-items-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] transition-transform hover:scale-105 active:scale-95">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
         </svg>
       </button>
-      <a href="/blog" class="text-sm font-medium text-[var(--text-tertiary)] dark:text-neutral-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors hidden sm:block">文章</a>
-      <a href="/archive" class="text-sm font-medium text-[var(--text-tertiary)] dark:text-neutral-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors hidden sm:block">归档</a>
-      <a href="/tags" class="text-sm font-medium text-[var(--text-tertiary)] dark:text-neutral-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors hidden sm:block">标签</a>
-      <a href="/about" class="text-sm font-medium text-[var(--text-tertiary)] dark:text-neutral-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors hidden sm:block">关于</a>
+      <a href="/blog" class="text-sm font-medium text-[var(--nav-link)] hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">文章</a>
+      <a href="/archive" class="text-sm font-medium text-[var(--nav-link)] hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">归档</a>
+      <a href="/tags" class="text-sm font-medium text-[var(--nav-link)] hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">标签</a>
+      <a href="/about" class="text-sm font-medium text-[var(--nav-link)] hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">关于</a>
       <ThemeToggle />
+    </div>
+
+    <!-- 移动端：搜索 + 菜单按钮 -->
+    <div class="flex sm:hidden items-center gap-2">
+      <button id="search-toggle-mobile" aria-label="搜索" class="grid h-9 w-9 place-items-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] transition-transform hover:scale-105 active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
+        </svg>
+      </button>
+      <button id="mobile-menu-toggle" aria-label="菜单" class="grid h-9 w-9 place-items-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] transition-transform hover:scale-105 active:scale-95">
+        <svg id="menu-icon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <svg id="close-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
   </nav>
 </header>
 
+<!-- 移动端全屏菜单 -->
+<div id="mobile-nav" class="mobile-nav-overlay">
+  <a href="/" class="mobile-nav-link" onclick="closeMobileNav()">首页</a>
+  <a href="/blog" class="mobile-nav-link" onclick="closeMobileNav()">文章</a>
+  <a href="/archive" class="mobile-nav-link" onclick="closeMobileNav()">归档</a>
+  <a href="/tags" class="mobile-nav-link" onclick="closeMobileNav()">标签</a>
+  <a href="/about" class="mobile-nav-link" onclick="closeMobileNav()">关于</a>
+  <ThemeToggle />
+</div>
+
 <script>
-  // 搜索按钮点击 — 使用自定义事件触发 SearchDialog，不依赖 window.__openSearch 时序
-  const searchBtn = document.getElementById('search-toggle');
-  if (searchBtn) {
-    searchBtn.addEventListener('click', () => {
-      // 先尝试自定义事件，后备使用全局函数
-      if (typeof document !== 'undefined') {
-        document.dispatchEvent(new CustomEvent('open-search'));
+  // 搜索按钮
+  const openSearch = () => {
+    if (typeof document !== 'undefined') {
+      document.dispatchEvent(new CustomEvent('open-search'));
+    }
+  };
+  document.getElementById('search-toggle')?.addEventListener('click', openSearch);
+  document.getElementById('search-toggle-mobile')?.addEventListener('click', openSearch);
+
+  // 移动端菜单
+  const mobileMenu = document.getElementById('mobile-nav');
+  const menuToggle = document.getElementById('mobile-menu-toggle');
+  const menuIcon = document.getElementById('menu-icon');
+  const closeIcon = document.getElementById('close-icon');
+
+  if (mobileMenu && menuToggle) {
+    window.openMobileNav = () => {
+      mobileMenu.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      menuIcon?.classList.add('hidden');
+      closeIcon?.classList.remove('hidden');
+    };
+    window.closeMobileNav = () => {
+      mobileMenu.classList.remove('open');
+      document.body.style.overflow = '';
+      menuIcon?.classList.remove('hidden');
+      closeIcon?.classList.add('hidden');
+    };
+    menuToggle.addEventListener('click', () => {
+      if (mobileMenu.classList.contains('open')) {
+        window.closeMobileNav();
+      } else {
+        window.openMobileNav();
       }
     });
-  }
-
-  // 同时也尝试全局函数（如果 SearchDialog 已加载）
-  if (searchBtn && window.__openSearch) {
-    // 如果已经加载完成，直接使用
   }
 </script>

@@ -28,6 +28,10 @@
     --toc-active: #6366f1;
     --search-bg: rgba(255, 255, 255, 0.98);
     --progress-bar: #6366f1;
+    --header-bg: rgba(255, 255, 255, 0.6);
+    --header-border: rgba(255, 255, 255, 0.4);
+    --nav-link: #555555;
+    --mobile-menu-bg: rgba(255, 255, 255, 0.95);
 }
 
 .dark {
@@ -50,6 +54,10 @@
     --toc-active: #818cf8;
     --search-bg: rgba(13, 17, 23, 0.98);
     --progress-bar: #818cf8;
+    --header-bg: rgba(20, 21, 23, 0.85);
+    --header-border: rgba(255, 255, 255, 0.08);
+    --nav-link: #9ca3af;
+    --mobile-menu-bg: rgba(20, 21, 23, 0.98);
 }
 
 /* ── 发光边框动画 ── */
@@ -81,6 +89,18 @@
     0% {
         opacity: 0;
         transform: translateY(16px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-down {
+    0% {
+        opacity: 0;
+        transform: translateY(-8px);
     }
 
     100% {
@@ -134,6 +154,10 @@
     animation: float 6s ease-in-out infinite;
 }
 
+.animate-slide-down {
+    animation: slide-down 0.3s ease both;
+}
+
 /* ── 文章内容排版 (Tailwind Typography) ── */
 .prose {
     --tw-prose-body: var(--text-secondary);
@@ -178,7 +202,6 @@
     background-color: var(--code-bg);
 }
 
-/* ── Shiki 代码块样式 ── */
 .astro-code {
     border-radius: 0.75rem;
     font-size: 0.85rem;
@@ -187,17 +210,15 @@
     background-color: var(--code-bg) !important;
 }
 
-/* 暗色模式下覆盖 Shiki light 主题产生的深色背景上的浅色文字 */
 .dark .astro-code {
     background-color: var(--code-bg) !important;
 }
 
-/* 暗色模式：强制代码块中的文字颜色使用浅色 */
 .dark .astro-code span {
     color: var(--tw-prose-code) !important;
 }
 
-/* ── 标题锚点偏移（修复固定导航栏遮挡）── */
+/* ── 标题锚点偏移 ── */
 article h2,
 article h3,
 article h4 {
@@ -285,6 +306,40 @@ article h4 {
     background: linear-gradient(90deg, var(--progress-bar), #a78bfa);
     z-index: 100;
     transition: width 0.1s ease;
+}
+
+/* ── 移动端菜单 ── */
+.mobile-nav-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background-color: var(--mobile-menu-bg);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.mobile-nav-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mobile-nav-link {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: color 0.2s ease;
+    text-decoration: none;
+}
+
+.mobile-nav-link:hover {
+    color: var(--toc-active);
 }
 
 /* ── 搜索弹窗 ── */
@@ -402,12 +457,11 @@ article h4 {
     color: var(--text-tertiary);
 }
 
-/* ── 选中文本样式 ── */
+/* ── 选中与滚动条 ── */
 ::selection {
     background-color: rgba(99, 102, 241, 0.25);
 }
 
-/* ── 滚动条美化 ── */
 .search-results::-webkit-scrollbar {
     width: 6px;
 }
@@ -419,4 +473,36 @@ article h4 {
 .search-results::-webkit-scrollbar-thumb {
     background-color: var(--border-color);
     border-radius: 3px;
+}
+
+/* ── 移动端 TOC 抽屉 ── */
+.mobile-toc-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 45;
+    display: none;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+    backdrop-filter: blur(8px);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-toc-btn:hover {
+    color: var(--toc-active);
+}
+
+@media (max-width: 1023px) {
+    .mobile-toc-btn {
+        display: flex;
+    }
 }
