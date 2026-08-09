@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* 使用 `.dark` class 驱动暗色模式，而非系统偏好 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ── 自定义主题变量 ── */
 @theme {
     --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -274,8 +277,7 @@ article h4 {
     color: #c9d1d9;
 }
 
-.prose pre:hover .copy-button,
-.prose pre .copy-button.always-visible {
+.prose pre:hover .copy-button {
     opacity: 1;
 }
 
@@ -312,17 +314,15 @@ article h4 {
 .mobile-nav-overlay {
     position: fixed;
     inset: 0;
-    z-index: 40;
-    background-color: var(--mobile-menu-bg);
-    backdrop-filter: blur(12px);
+    z-index: 51;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
-    gap: 1.5rem;
 }
 
 .mobile-nav-overlay.open {
@@ -330,15 +330,51 @@ article h4 {
     pointer-events: auto;
 }
 
-.mobile-nav-link {
-    font-size: 1.25rem;
-    font-weight: 500;
-    color: var(--text-primary);
-    transition: color 0.2s ease;
-    text-decoration: none;
+/* 底部滑出的面板 */
+.mobile-nav-panel {
+    width: 100%;
+    max-width: 100%;
+    background-color: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    padding: 0.75rem 1.5rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    max-width: 500px;
+    margin: 0 auto;
 }
 
-.mobile-nav-link:hover {
+.mobile-nav-panel.panel-enter {
+    transform: translateY(0);
+}
+
+.mobile-nav-panel.panel-exit {
+    transform: translateY(100%);
+}
+
+/* 导航链接项（带图标的行） */
+.mobile-nav-link-item {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.mobile-nav-link-item:hover {
+    background-color: var(--tag-bg);
     color: var(--toc-active);
 }
 
@@ -480,7 +516,7 @@ article h4 {
     position: fixed;
     bottom: 1.5rem;
     left: 1.5rem;
-    z-index: 45;
+    z-index: 100;
     display: none;
     align-items: center;
     gap: 0.375rem;
@@ -505,4 +541,9 @@ article h4 {
     .mobile-toc-btn {
         display: flex;
     }
+}
+
+/* 移动端 TOC 按钮：移出 main 子层叠上下文后，z-index 保证高于 BackToTop(z-50) */
+#mobile-toc-btn {
+    z-index: 100 !important;
 }

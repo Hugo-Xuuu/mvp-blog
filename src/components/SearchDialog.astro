@@ -27,6 +27,7 @@ import Fuse from 'fuse.js';
 
   if (!overlay || !dialog || !input || !resultsContainer) return;
 
+  let allPosts = [];
   let fuse = null;
   let isOpen = false;
   let searchTerm = '';
@@ -36,17 +37,17 @@ import Fuse from 'fuse.js';
     try {
       const res = await fetch('/search-index.json');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const searchIndex = await res.json();
+      allPosts = await res.json();
 
-      fuse = new Fuse(searchIndex, {
+      fuse = new Fuse(allPosts, {
         keys: [
-          { name: 'title', weight: 2 },
+          { name: 'title', weight: 3 },
           { name: 'description', weight: 1 },
-          { name: 'content', weight: 1 },
+          { name: 'content', weight: 0.5 },
         ],
-        threshold: 0.4,
-        includeMatches: true,
-        minMatchCharLength: 1,
+        threshold: 0.3,
+        minMatchCharLength: 2,
+        ignoreLocation: true,
       });
 
       if (searchTerm) doSearch(searchTerm);
@@ -59,66 +60,95 @@ import Fuse from 'fuse.js';
 
   function doSearch(term) {
     searchTerm = term;
-    if (!fuse || !term.trim()) {
+    if (!allPosts.length || !term.trim()) {
       resultsContainer.innerHTML =
         '<div class="search-empty"><p>' +
-        (term.trim() ? '' : '输入关键词开始搜索') +
+        (term.trim() ? '索引加载中…' : '输入关键词开始搜索') +
         '</p></div>';
       return;
     }
 
-    const results = fuse.search(term.trim());
-    if (results.length === 0) {
+    const raw = term.trim();
+
+    // 策略1: 精确子串匹配（标题优先）
+    const lowerTerm = raw.toLowerCase();
+    const exactMatches = allPosts.filter((p) =>
+      p.title.toLowerCase().includes(lowerTerm)
+    );
+    // 如果标题精确匹配不够，再从内容找
+    if (exactMatches.length < 3) {
+      allPosts.forEach((p) => {
+        if (!exactMatches.includes(p) && (
+          (p.description || '').toLowerCase().includes(lowerTerm) ||
+          (p.content || '').toLowerCase().includes(lowerTerm)
+        )) {
+          exactMatches.push(p);
+        }
+      });
+    }
+
+    let matched = exactMatches;
+
+    // 策略2: 如果精确匹配太少，用 Fuse 模糊搜索补充
+    if (matched.length < 3 && fuse) {
+      const fuseResults = fuse.search(raw);
+      const fuseItems = fuseResults.map((r) => r.item);
+      // 合并去重
+      const existingSlugs = new Set(matched.map((p) => p.slug));
+      fuseItems.forEach((p) => {
+        if (!existingSlugs.has(p.slug)) {
+          matched.push(p);
+          existingSlugs.add(p.slug);
+        }
+      });
+    }
+
+    if (matched.length === 0) {
       resultsContainer.innerHTML =
         '<div class="search-empty"><p>未找到与 "<strong>' +
-        escapeHtml(term) +
+        escapeHtml(raw) +
         '</strong>" 相关的内容</p></div>';
       return;
     }
 
-    resultsContainer.innerHTML = results
+    resultsContainer.innerHTML = matched
       .slice(0, 20)
-      .map((result) => {
-        const item = result.item;
-        const title = highlightMatches(item.title, result.matches);
-        const excerpt = highlightMatches(
-          (item.content || item.description || '').slice(0, 150),
-          result.matches
-        );
+      .map((item) => {
+        const contentText = item.content || item.description || '';
+
+        // 截取包含搜索词的上下文片段（不做高亮标记）
+        const excerpt = extractExcerpt(contentText, raw);
+
         const tagsHtml = (item.tags || [])
           .map((t) => `<span class="text-xs text-[var(--text-tertiary)]">#${escapeHtml(t)}</span>`)
           .join(' ');
 
         return `<a href="/blog/${item.slug}" class="search-result-item">
-          <div class="search-result-title">${title}</div>
-          <div class="search-result-excerpt">${excerpt}</div>
+          <div class="search-result-title">${escapeHtml(item.title)}</div>
+          ${excerpt ? `<div class="search-result-excerpt">${excerpt}</div>` : ''}
           <div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>
         </a>`;
       })
       .join('');
   }
 
-  function highlightMatches(text, matches) {
-    if (!matches || !text) return escapeHtml(text.slice(0, 200));
-    const matchedIndices = new Set();
-    matches.forEach((m) => {
-      if (m.key === 'title' || m.key === 'content' || m.key === 'description') {
-        m.indices.forEach(([start, end]) => {
-          for (let i = start; i <= end; i++) matchedIndices.add(i);
-        });
-      }
-    });
-    if (matchedIndices.size === 0) return escapeHtml(text.slice(0, 200));
-    let result = '';
-    const maxLen = Math.min(text.length, 200);
-    for (let i = 0; i < maxLen; i++) {
-      if (matchedIndices.has(i)) {
-        result += `<mark>${escapeHtml(text[i])}</mark>`;
-      } else {
-        result += escapeHtml(text[i]);
-      }
-    }
-    return result;
+  /** 从内容中截取包含搜索词的片段（纯文本，无高亮标记） */
+  function extractExcerpt(content, term) {
+    if (!content || !term) return '';
+    const lowerContent = content.toLowerCase();
+    const lowerTerm = term.toLowerCase();
+    const idx = lowerContent.indexOf(lowerTerm);
+    if (idx === -1) return '';
+
+    const contextLen = 50;
+    const start = Math.max(0, idx - contextLen);
+    const end = Math.min(content.length, idx + term.length + contextLen);
+    let excerpt = content.slice(start, end);
+
+    if (start > 0) excerpt = '…' + excerpt;
+    if (end < content.length) excerpt = excerpt + '…';
+
+    return escapeHtml(excerpt);
   }
 
   function escapeHtml(str) {
@@ -174,10 +204,7 @@ import Fuse from 'fuse.js';
     }
   });
 
-  // 暴露打开函数供外部调用
   window.__openSearch = openSearch;
-
-  // 监听自定义事件
   document.addEventListener('open-search', () => openSearch());
 })();
 </script>

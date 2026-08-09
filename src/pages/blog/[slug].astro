@@ -106,17 +106,18 @@ const hasTOC = headings && headings.filter((h) => h.depth <= 3).length > 1;
       </div>
     </div>
 
-    <!-- 移动端 TOC 按钮 -->
-    <button id="mobile-toc-btn" class="mobile-toc-btn" aria-label="目录">
+    <!-- 移动端 TOC 按钮（z-index 提高，防止被底部元素遮挡） -->
+    <button id="mobile-toc-btn" class="mobile-toc-btn !z-[70]" aria-label="目录">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
       </svg>
       目录
     </button>
 
-    <!-- 移动端 TOC 抽屉 -->
-    <div id="mobile-toc-drawer" class="fixed inset-x-0 bottom-0 z-50 bg-[var(--bg-primary)] border-t border-[var(--border-color)] rounded-t-2xl shadow-2xl translate-y-full transition-transform duration-300 ease-out lg:hidden"
-         style="max-height: 60vh; overflow-y: auto;">
+    <!-- 移动端 TOC 底部抽屉（使用 transform，不依赖 Tailwind translate 属性） -->
+    <div id="mobile-toc-drawer"
+         class="fixed inset-x-0 bottom-0 z-[60] bg-[var(--bg-primary)] border-t border-[var(--border-color)] rounded-t-2xl shadow-2xl lg:hidden"
+         style="max-height: 60vh; overflow-y: auto; transform: translateY(100%); pointer-events: none; transition: transform 0.3s ease-out;">
       <div class="flex items-center justify-between px-5 py-4 border-b border-[var(--border-color)]">
         <span class="font-semibold text-sm">目录</span>
         <button id="mobile-toc-close" class="p-1 rounded-lg hover:bg-[var(--tag-bg)] transition-colors">
@@ -187,9 +188,8 @@ const hasTOC = headings && headings.filter((h) => h.depth <= 3).length > 1;
       if (pre.querySelector('.copy-button')) return;
       const code = pre.querySelector('code');
       if (!code) return;
-      const singleLine = (code.textContent || '').split('\n').length <= 2;
       const btn = document.createElement('button');
-      btn.className = 'copy-button' + (singleLine ? ' always-visible' : '');
+      btn.className = 'copy-button';
       btn.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> 复制';
       pre.style.position = 'relative';
       pre.appendChild(btn);
@@ -214,13 +214,75 @@ const hasTOC = headings && headings.filter((h) => h.depth <= 3).length > 1;
     const closeBtn = document.getElementById('mobile-toc-close');
     const list = document.getElementById('mobile-toc-list');
     if (!btn || !drawer) return;
-    const open = () => { drawer.style.transform = 'translateY(0)'; btn.style.display = 'none'; };
-    const close = () => { drawer.style.transform = 'translateY(100%)'; btn.style.display = 'flex'; };
-    btn.addEventListener('click', open);
-    closeBtn?.addEventListener('click', close);
-    // 点击 TOC 链接后关闭抽屉
+
+    // ★ 将 drawer 和 btn 移到 body（根层叠上下文），彻底避免 <main> 子层叠上下文限制
+    if (drawer.parentNode !== document.body) document.body.appendChild(drawer);
+    if (btn.parentNode !== document.body) document.body.appendChild(btn);
+
+    // ★ 直接设置高优先级 z-index，确保始终高于 BackToTop(z-50)
+    btn.style.zIndex = '999';
+
+    // 遮罩（根层叠上下文，z-index 低于 drawer）
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 ease-out lg:hidden';
+    overlay.style.zIndex = '55';
+    document.body.appendChild(overlay);
+
+    // drawer z-index
+    drawer.style.zIndex = '60';
+
+    // ── 辅助函数：判断 mobile-nav 是否打开 ──
+    const isMobileNavOpen = () => document.getElementById('mobile-nav')?.classList.contains('open') ?? false;
+
+    // ── 辅助函数：判断 TOC 是否已经打开 ──
+    const isTocOpen = () => drawer.style.transform === 'translateY(0)' || drawer.style.transform === 'translateY(0px)';
+
+    // ── 统一更新按钮可见性（合并所有条件）──
+    const updateBtnDisplay = () => {
+      if (isMobileNavOpen() || isTocOpen()) {
+        btn.style.display = 'none';
+      } else {
+        btn.style.display = '';
+      }
+    };
+
+    const openDrawer = () => {
+      drawer.style.transform = 'translateY(0)';
+      drawer.style.pointerEvents = 'auto';
+      overlay.style.opacity = '1';
+      overlay.style.pointerEvents = 'auto';
+      document.body.style.overflow = 'hidden';
+      updateBtnDisplay();
+    };
+    const closeDrawer = () => {
+      drawer.style.transform = 'translateY(100%)';
+      drawer.style.pointerEvents = 'none';
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+      document.body.style.overflow = '';
+      updateBtnDisplay();
+    };
+    btn.addEventListener('click', openDrawer);
+    closeBtn?.addEventListener('click', closeDrawer);
+    overlay.addEventListener('click', closeDrawer);
     list?.addEventListener('click', (e) => {
-      if (e.target.closest('.mobile-toc-link')) setTimeout(close, 300);
+      if (e.target.closest('.mobile-toc-link')) setTimeout(closeDrawer, 350);
     });
+
+    // ★ 监听手机菜单状态变化：打开时关闭 TOC 并隐藏按钮；关闭时恢复按钮
+    const mobileNavOverlay = document.getElementById('mobile-nav');
+    if (mobileNavOverlay) {
+      const mobObserver = new MutationObserver(() => {
+        if (mobileNavOverlay.classList.contains('open')) {
+          // 手机菜单打开时，如果 TOC 开着则关闭
+          if (isTocOpen()) closeDrawer();
+          btn.style.display = 'none';
+        } else {
+          // 手机菜单关闭时，如果 TOC 没开则恢复按钮
+          if (!isTocOpen()) btn.style.display = '';
+        }
+      });
+      mobObserver.observe(mobileNavOverlay, { attributes: true, attributeFilter: ['class'] });
+    }
   })();
 </script>
